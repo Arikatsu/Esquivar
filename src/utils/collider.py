@@ -1,4 +1,3 @@
-import pygame
 from constants import Constants
 
 # Check for player collission with platforms

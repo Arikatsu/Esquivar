@@ -3,6 +3,8 @@ from player import Player
 from constants import Constants
 from platforms import Platforms
 from utils.collider import check_collision
+from utils.controls import KeyEvents
+from utils.score import score
 
 def main():
     pygame.init()
@@ -18,9 +20,15 @@ def main():
     player_group = pygame.sprite.Group()
     player_group.add(player)
 
-    # Background
+    # Visuals
     bg = pygame.image.load("assets/gfx/background.jpg")
     bg = pygame.transform.scale(bg, (Constants.screen_width, Constants.screen_height))
+
+    font_regular = pygame.font.Font("assets/fonts/OverpassMono-Regular.ttf", 20)
+    font_bold = pygame.font.Font("assets/fonts/OverpassMono-Bold.ttf", 20)
+
+    points = Constants.initial_score
+    game_speed = Constants.initial_game_speed
 
     # Platforms
     platformTop = Platforms(Constants.screen_width, 120, (0, 0, 0), Constants.screen_width / 2, 0)
@@ -37,13 +45,18 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit = True
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    KeyEvents.inverse_gravity(player, platformTop)
 
         canvas.blit(bg, (0, 0))
         player_group.draw(canvas)
         platform_group.draw(canvas)
 
         Player.set_player_gravity(player)
-
+        points, game_speed = score(points, game_speed, font_bold, canvas)
+        pygame.display.update()
         check_collision(player, platformBottom, platformTop)
 
         pygame.display.flip()
