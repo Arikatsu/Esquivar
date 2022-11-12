@@ -2,7 +2,7 @@ from constants import Constants
 
 def score(points, game_speed, font_bold, canvas):
     points += 1
-    if points % 100 == 0:
+    if points % 500 == 0:
         game_speed += 1
 
     text = font_bold.render("Score: " + str(points), True, (255, 255, 255))

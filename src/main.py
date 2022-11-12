@@ -2,6 +2,7 @@ import pygame, os
 from player import Player
 from constants import Constants
 from platforms import Platforms
+from obstacles import Obstacles
 from utils.collider import check_collision
 from utils.controls import KeyEvents
 from utils.score import score
@@ -29,6 +30,7 @@ def main():
 
     points = Constants.initial_score
     game_speed = Constants.initial_game_speed
+    obstacles = []
 
     # Platforms
     platformTop = Platforms(Constants.screen_width, 120, (0, 0, 0), Constants.screen_width / 2, 0)
@@ -56,6 +58,16 @@ def main():
 
         Player.set_player_gravity(player)
         points, game_speed = score(points, game_speed, font_bold, canvas)
+
+        if len(obstacles) == 0:
+            obstacles.append(Obstacles())
+
+        for obstacle in obstacles:
+            obstacle.update(game_speed, obstacles)
+            canvas.blit(obstacle.image, obstacle.rect)
+            if player.rect.colliderect(obstacle.rect):
+                pygame.draw.rect(canvas, (255, 0, 0), player.rect, 5)
+
         pygame.display.update()
         check_collision(player, platformBottom, platformTop)
 
