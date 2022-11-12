@@ -6,6 +6,7 @@ from obstacles import Obstacles
 from utils.collider import check_collision
 from utils.controls import KeyEvents
 from utils.score import score
+from utils.particles import Particles
 
 def main():
     pygame.init()
@@ -32,6 +33,10 @@ def main():
     game_speed = Constants.initial_game_speed
     obstacles = []
 
+    PARTICLE_EVENT = pygame.USEREVENT + 1
+    pygame.time.set_timer(PARTICLE_EVENT, 50)
+    player_particles = Particles()
+
     # Platforms
     platformTop = Platforms(Constants.screen_width, 120, (0, 0, 0), Constants.screen_width / 2, 0)
     platformBottom = Platforms(Constants.screen_width, 120, (0, 0, 0), Constants.screen_width / 2, Constants.screen_height)
@@ -48,16 +53,20 @@ def main():
             if event.type == pygame.QUIT:
                 exit = True
             
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    KeyEvents.inverse_gravity(player, platformTop)
+            if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (event.type == pygame.MOUSEBUTTONDOWN):
+                KeyEvents.inverse_gravity(player, platformTop)
+
+            if event.type == PARTICLE_EVENT:
+                player_particles.add_particle(player)
 
         canvas.blit(bg, (0, 0))
         player_group.draw(canvas)
+
         platform_group.draw(canvas)
 
         Player.set_player_gravity(player)
-        points, game_speed = score(points, game_speed, font_bold, canvas)
+        points, game_speed, player.gravity = score(points, game_speed, player.gravity, font_bold, canvas)
+
 
         if len(obstacles) == 0:
             obstacles.append(Obstacles())
@@ -68,6 +77,7 @@ def main():
             if player.rect.colliderect(obstacle.rect):
                 pygame.draw.rect(canvas, (255, 0, 0), player.rect, 5)
 
+        player_particles.emit(canvas)
         pygame.display.update()
         check_collision(player, platformBottom, platformTop)
 

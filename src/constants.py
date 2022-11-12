@@ -6,7 +6,7 @@ class Constants:
     screen_title = "Esquivar"
 
     # player
-    position = (100, 100)
+    position = (screen_height / 2, screen_width / 2)
     gravity = 5
     height = 25
     width = 25
