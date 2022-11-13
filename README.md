@@ -30,6 +30,12 @@ pyinstaller Esquivar.spec
 ```
 Make sure to copy `assets` folder where the executable was built
 
+## Contributing
+
+If you want to contribute to the project, feel free to open a pull request or an issue.
+There are a lot of things that can be improved, so feel free to do so.
+Also there's no issue format or contribution format, every contribution is welcome.
+
 ## About Game
 
 The game features a calming atmosphere and music (royalty free ehe).
