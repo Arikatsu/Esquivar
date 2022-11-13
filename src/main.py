@@ -1,4 +1,4 @@
-import pygame, os
+import pygame, os, json
 from player import Player
 from constants import Constants
 from platforms import Platforms
@@ -11,16 +11,21 @@ from utils.particles import Particles
 death_count = 0
 points = Constants.initial_score
 
+# create a json if not exist to store high score
+if not os.path.exists("game.json"):
+    with open("game.json", "w") as f:
+        json.dump({ "high_score": 0 }, f)
+
 def game():
     pygame.init()
 
-    # create screen
+    # Screen
     canvas = pygame.display.set_mode((Constants.screen_width, Constants.screen_height))
     clock = pygame.time.Clock()
 
     pygame.display.set_caption(Constants.screen_title)
 
-    # PLayer
+    # Player
     player = Player(Constants.gravity, Constants.height, Constants.width, Constants.color, Constants.position[0], Constants.position[1])
     player_group = pygame.sprite.Group()
     player_group.add(player)
@@ -39,6 +44,7 @@ def game():
     # Game
     global points
     global death_count
+    global high_score
     game_speed = Constants.initial_game_speed
     obstacles = []
     game_paused = True
@@ -49,6 +55,13 @@ def game():
     platform_group = pygame.sprite.Group()
     platform_group.add(platformTop)
     platform_group.add(platformBottom)
+
+    high_score = json.load(open("game.json"))["high_score"]
+
+    if points > high_score:
+        high_score = points
+        with open("game.json", "w") as f:
+            json.dump({ "high_score": high_score }, f)
 
     global exit
     exit = False
@@ -95,7 +108,7 @@ def game():
                     points = 0
 
         Player.set_player_gravity(player)
-        points, game_speed, player.gravity = score(points, game_speed, player.gravity, font_bold, canvas)
+        points, game_speed, player.gravity, high_score = score(points, game_speed, player.gravity, high_score, font_bold, canvas)
 
         if len(obstacles) == 0:
             obstacles.append(Obstacles())
