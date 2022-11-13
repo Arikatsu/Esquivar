@@ -24,6 +24,8 @@ def game():
     clock = pygame.time.Clock()
 
     pygame.display.set_caption(Constants.screen_title)
+    game_icon = pygame.image.load("assets/gfx/icon.png")
+    pygame.display.set_icon(game_icon)
 
     # Player
     player = Player(Constants.gravity, Constants.height, Constants.width, Constants.color, Constants.position[0], Constants.position[1])
