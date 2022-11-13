@@ -8,7 +8,10 @@ from utils.controls import KeyEvents
 from utils.score import score
 from utils.particles import Particles
 
-def main():
+death_count = 0
+points = Constants.initial_score
+
+def game():
     pygame.init()
 
     # create screen
@@ -29,13 +32,16 @@ def main():
     font_regular = pygame.font.Font("assets/fonts/OverpassMono-Regular.ttf", 20)
     font_bold = pygame.font.Font("assets/fonts/OverpassMono-Bold.ttf", 20)
 
-    points = Constants.initial_score
-    game_speed = Constants.initial_game_speed
-    obstacles = []
-
     PARTICLE_EVENT = pygame.USEREVENT + 1
     pygame.time.set_timer(PARTICLE_EVENT, 50)
     player_particles = Particles()
+
+    # Game
+    global points
+    global death_count
+    game_speed = Constants.initial_game_speed
+    obstacles = []
+    game_paused = True
 
     # Platforms
     platformTop = Platforms(Constants.screen_width, 120, (0, 0, 0), Constants.screen_width / 2, 0)
@@ -44,11 +50,13 @@ def main():
     platform_group.add(platformTop)
     platform_group.add(platformBottom)
 
+    global exit
     exit = False
 
     # Game loop
     while not exit:
         clock.tick(60)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit = True
@@ -64,9 +72,30 @@ def main():
 
         platform_group.draw(canvas)
 
+        while game_paused:
+            canvas.fill((0, 0, 0))
+            text = font_bold.render("Press any key to start", True, (255, 255, 255))
+            text_rect = text.get_rect()
+            text_rect.center = (Constants.screen_width / 2, Constants.screen_height / 2)
+            canvas.blit(text, text_rect)
+            
+            if death_count > 0:
+                score_text = font_regular.render("Score: " + str(points), True, (255, 255, 255))
+                score_text_rect = score_text.get_rect()
+                score_text_rect.center = (Constants.screen_width / 2, Constants.screen_height / 2 + 50)
+                canvas.blit(score_text, score_text_rect)
+
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_paused = False
+                    exit = True
+                if event.type == pygame.KEYDOWN:
+                    game_paused = False
+                    points = 0
+
         Player.set_player_gravity(player)
         points, game_speed, player.gravity = score(points, game_speed, player.gravity, font_bold, canvas)
-
 
         if len(obstacles) == 0:
             obstacles.append(Obstacles())
@@ -75,13 +104,14 @@ def main():
             obstacle.update(game_speed, obstacles)
             canvas.blit(obstacle.image, obstacle.rect)
             if player.rect.colliderect(obstacle.rect):
-                pygame.draw.rect(canvas, (255, 0, 0), player.rect, 5)
+                death_count += 1
+                game()
 
         player_particles.emit(canvas)
         pygame.display.update()
         check_collision(player, platformBottom, platformTop)
 
-        pygame.display.flip()
+pygame.quit()
         
 if __name__ == "__main__":
-    main()
+    game()
