@@ -11,7 +11,7 @@ from utils.particles import Particles
 death_count = 0
 points = Constants.initial_score
 
-# create a json if not exist to store high score
+# Create a json if not exist to store high score
 if not os.path.exists("game.json"):
     with open("game.json", "w") as f:
         json.dump({ "high_score": 0 }, f)
@@ -41,6 +41,14 @@ def game():
     pygame.time.set_timer(PARTICLE_EVENT, 50)
     player_particles = Particles()
 
+    # Music
+    pygame.mixer.music.load("assets/sfx/main-theme.ogg")
+    gavity_sound = pygame.mixer.Sound("assets/sfx/gravity-switch.wav")
+    high_score_beat_sound = pygame.mixer.Sound("assets/sfx/high-score-beat.wav")
+    game_over_sound = pygame.mixer.Sound("assets/sfx/game-over.wav")
+
+    pygame.mixer.music.play(-1)
+
     # Game
     global points
     global death_count
@@ -48,6 +56,8 @@ def game():
     game_speed = Constants.initial_game_speed
     obstacles = []
     game_paused = True
+    high_score_check = False
+    high_score = json.load(open("game.json"))["high_score"]
 
     # Platforms
     platformTop = Platforms(Constants.screen_width, 120, (0, 0, 0), Constants.screen_width / 2, 0)
@@ -55,9 +65,8 @@ def game():
     platform_group = pygame.sprite.Group()
     platform_group.add(platformTop)
     platform_group.add(platformBottom)
-
-    high_score = json.load(open("game.json"))["high_score"]
-
+    
+    # Save high score
     if points > high_score:
         high_score = points
         with open("game.json", "w") as f:
@@ -76,6 +85,7 @@ def game():
             
             if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (event.type == pygame.MOUSEBUTTONDOWN):
                 KeyEvents.inverse_gravity(player, platformTop)
+                gavity_sound.play()
 
             if event.type == PARTICLE_EVENT:
                 player_particles.add_particle(player)
@@ -108,8 +118,8 @@ def game():
                     points = 0
 
         Player.set_player_gravity(player)
-        points, game_speed, player.gravity, high_score = score(points, game_speed, player.gravity, high_score, font_bold, canvas)
-
+        points, game_speed, player.gravity, high_score = score(points, game_speed, player.gravity, high_score, high_score_beat_sound, death_count, font_bold, canvas)
+        
         if len(obstacles) == 0:
             obstacles.append(Obstacles())
 
@@ -117,6 +127,7 @@ def game():
             obstacle.update(game_speed, obstacles)
             canvas.blit(obstacle.image, obstacle.rect)
             if player.rect.colliderect(obstacle.rect):
+                game_over_sound.play()
                 death_count += 1
                 game()
 
